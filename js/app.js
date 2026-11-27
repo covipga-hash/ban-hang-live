@@ -1210,7 +1210,7 @@ function connectAbly() {
   try {
     const client = window.AblyPubSub.createClient({
       key: cfg.key,
-      clientId: 'obs-' + Math.random().toString(36).slice(2, 10),
+      clientId: 'obs-ban-hang',
     });
     const channel = client.channels.get(cfg.channel);
     const EVENTS = ['comment', 'member', 'gift', 'pinned_product', 'pinned_product_cleared', 'room_user', 'status', 'shopping'];
