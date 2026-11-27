@@ -68,7 +68,9 @@ body {
 html.clean-mode .host-controls,
 html.clean-mode #hostControls,
 body.clean-mode .host-controls,
-body.clean-mode #hostControls {
+body.clean-mode #hostControls,
+html.clean-mode .card-focus-btn,
+body.clean-mode .card-focus-btn {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
