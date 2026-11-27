@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Host bán hàng — Phiên LIVE Săn Deal</title>
+  <meta name="description" content="Host bán hàng — Trải nghiệm bán hàng livestream tương tác 1080x1920 với nhân vật 2D sống động, đầy đủ 5 nhóm sản phẩm, tư vấn liên tục, chốt mã tự động và kết nối TikTok Live." />
+  <!-- Layer 2 (?clean=1): activate clean-mode synchronously before first paint -->
+  <script>
+    (function () {
+      try {
+        var sp = new URLSearchParams(window.location.search || '');
+        var isClean =
+          sp.get('clean') === '1' ||
+          sp.get('clean') === 'true' ||
+          /[?&#]clean=(1|true)(?:[&#]|$)/i.test(window.location.href || '');
+        if (isClean) {
+          document.documentElement.classList.add('clean-mode');
+          var st = document.createElement('style');
+          st.id = 'head-clean-style';
+          st.textContent =
+            'html.clean-mode .host-controls,html.clean-mode #hostControls,body.clean-mode .host-controls,body.clean-mode #hostControls{display:none!important;visibility:hidden!important;opacity:0!important;height:0!important;padding:0!important;margin:0!important;border:0!important;overflow:hidden!important;pointer-events:none!important;}';
+          document.head.appendChild(st);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css?v=1" />
+</head>
+<body>
+  <div id="viewportShell" class="viewport-shell">
+    <main id="stage" class="stage" aria-label="Khung phát trực tiếp Host bán hàng 1080x1920">
+      <!-- 1. HEADER -->
+      <header class="live-header">
+        <div class="header-left">
+          <span class="live-pill" aria-label="Đang phát trực tiếp">
+            <span class="live-dot"></span>LIVE
+          </span>
+          <h1 class="app-title">Host bán hàng</h1>
+          <span id="modeBadge" class="mode-badge">CHỜ LIVE</span>
+        </div>
+        <div class="header-right">
+          <div id="viewerPill" class="stat-pill viewer-pill" title="Số người đang xem">
+            <span aria-hidden="true">👁</span>
+            <span id="viewerCountValue">0</span>
+          </div>
+          <div id="salesPill" class="stat-pill sales-pill" title="Số đơn đã chốt và doanh thu phiên live">
+            <span aria-hidden="true">🛍️</span>
+            <span id="ordersCountValue">0</span> đơn ·
+            <span id="revenueValue">0đ</span>
+          </div>
+          <button id="cartOpenBtn" class="cart-header-btn" type="button" aria-label="Mở giỏ hàng">
+            <span aria-hidden="true">🛒</span>
+            <span>Giỏ</span>
+            <span id="cartBadge" class="cart-badge">0</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- 2. LATEST COMMENT + TOP GIFTERS BANNER -->
+      <section class="top-banner" aria-label="Bình luận mới nhất và Top tặng quà">
+        <div class="latest-comment-box">
+          <div class="banner-label">💬 Bình luận mới nhất</div>
+          <div id="latestCommentContent" class="latest-comment-content">
+            <span class="comment-avatar" style="background:#e11d48">NG</span>
+            <div class="comment-text-wrap">
+              <strong id="latestCommentUser" class="comment-user">Ngọc</strong>
+              <span id="latestCommentText" class="comment-text">Chào mừng cả nhà đến với phiên live Host bán hàng cùng Ngọc hôm nay nha!</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="top-gifters-box">
+          <div class="top-gifters-head">
+            <span class="banner-label">🏆 Top tặng quà</span>
+            <span id="diamondsTotalBadge" class="diamonds-total">0💎</span>
+          </div>
+          <div id="topGiftersList" class="top-gifters-list">
+            <span class="gifter-empty">Chưa có quà — Tặng 10💎 mở Freeship!</span>
+          </div>
+          <div class="milestone-bar-wrap">
+            <div class="milestone-track">
+              <div id="milestoneFill" class="milestone-fill" style="width:0%"></div>
+            </div>
+            <div class="milestone-labels">
+              <span id="milestone10Label" class="milestone-tag">10💎 Freeship</span>
+              <span id="milestone50Label" class="milestone-tag">50💎 −5% món đang giới thiệu</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. COMPACT REAL-TIME SHOPPING ACTIVITY FEED -->
+      <section class="shopping-activity-bar" aria-label="Hoạt động mua sắm của người xem">
+        <span class="activity-pill-title">⚡ Đang mua sắm</span>
+        <div id="shoppingFeedList" class="shopping-feed-list">
+          <span class="activity-item">Chưa có hoạt động mua sắm</span>
+        </div>
+        <span id="pendingQuestionsBadge" class="pending-q-badge hidden" title="Câu hỏi chưa có trong catalogue đang chờ kiểm tra">
+          📝 Chờ check: <strong id="pendingQuestionsCount">0</strong>
+        </span>
+      </section>
+
+      <!-- 4. MAIN STUDIO STAGE (ANIMATED 2D FULL-BODY HOST + SPEECH BUBBLE + LARGE SPOTLIGHT PRODUCT) -->
+      <section class="studio-stage">
+        <canvas id="stageCanvas" width="1080" height="924" aria-label="Nhân vật 2D Ngọc đứng toàn thân bên quầy sản phẩm"></canvas>
+
+        <!-- Live gesture reaction pill near 2D host -->
+        <div id="hostGestureBadge" class="host-gesture-badge badge-idle" aria-live="off">✨ Sẵn sàng tư vấn</div>
+
+        <!-- Pop-in Welcome Popup (Name + Circular Avatar) -->
+        <div id="welcomePopupSlot" class="welcome-popup-slot" aria-live="polite"></div>
+
+        <!-- Floating Gift Toast -->
+        <div id="giftToast" class="gift-toast hidden" aria-live="polite"></div>
+
+        <!-- Speech Bubble right above 2D Host's head -->
+        <div id="hostSpeechBubble" class="host-speech-bubble" role="status" aria-live="polite">
+          <div class="speech-meta">
+            <span class="speech-host-tag">
+              <img src="assets/host-2d-avatar.svg" alt="Host Ngọc 2D" class="speech-host-avatar" />
+              Ngọc
+            </span>
+            <span id="speechCheckingTag" class="speech-checking-tag hidden">🔍 Đang check thông tin…</span>
+          </div>
+          <p id="hostSpeechText" class="speech-text">Xin chào cả nhà, em là Ngọc ạ! Bấm Bắt đầu để cùng Ngọc săn deal siêu hời trên phiên live Host bán hàng hôm nay nha!</p>
+        </div>
+
+        <!-- LARGE SPOTLIGHT PRODUCT CARD BESIDE HOST -->
+        <article id="spotlightCard" class="spotlight-card" aria-label="Sản phẩm đang giới thiệu">
+          <div id="spotlightPinnedBanner" class="spotlight-pinned-banner hidden" role="status" aria-live="polite"></div>
+          <div class="spotlight-top-row">
+            <span id="spotlightCodeBadge" class="code-badge code-badge-lg">Mã 01</span>
+            <span id="spotlightCategory" class="spotlight-category">Thời trang</span>
+            <span id="flashSalePill" class="flash-sale-pill">⚡ <span id="flashSaleTimer">01:15</span></span>
+          </div>
+
+          <div class="spotlight-status-row">
+            <span id="spotlightCartViewers" class="cart-viewers-badge">👀 0 người đang xem giỏ</span>
+            <span id="perkFreeshipBadge" class="perk-badge perk-freeship hidden">🚚 FREESHIP</span>
+            <span id="perkExtraBadge" class="perk-badge perk-extra hidden">💎 −5% món đang giới thiệu</span>
+          </div>
+
+          <div id="spotlightVisual" class="spotlight-visual"></div>
+
+          <div class="spotlight-info">
+            <h2 id="spotlightName" class="spotlight-name">Áo trắng tay phồng</h2>
+            <p id="spotlightBenefit" class="spotlight-benefit">Mát nhẹ, mặc đi chơi hay đi học đều xinh</p>
+
+            <div class="spotlight-price-row">
+              <span id="spotlightPrice" class="spotlight-price">189.000đ</span>
+              <span id="spotlightOrigPrice" class="spotlight-orig-price">259.000đ</span>
+              <span id="spotlightDiscount" class="spotlight-discount">-27%</span>
+            </div>
+
+            <div class="spotlight-stock-row">
+              <span id="spotlightStockBadge" class="stock-badge">Còn 25 sản phẩm</span>
+              <span id="spotlightCodeHint" class="code-hint">Gõ "chốt mã 01"</span>
+            </div>
+          </div>
+
+          <div class="spotlight-actions">
+            <button id="spotlightAddBtn" class="btn-secondary" type="button">➕ Thêm vào giỏ</button>
+            <button id="spotlightBuyNowBtn" class="btn-primary" type="button">⚡ Mua ngay</button>
+          </div>
+        </article>
+
+        <!-- Paused Indicator -->
+        <div id="pausedBanner" class="paused-banner hidden">
+          <span>⏸ ĐÃ TẠM DỪNG — Nhấn phím Space để tiếp tục</span>
+        </div>
+      </section>
+
+      <!-- 5. PRODUCT CATALOG SHELF (ALL 5 CATEGORIES) -->
+      <section class="catalog-section" aria-label="Danh mục 5 nhóm sản phẩm">
+        <div id="categoryTabs" class="category-tabs" role="tablist"></div>
+        <div id="catalogGrid" class="catalog-grid"></div>
+      </section>
+
+      <!-- 6. VIEWER INTERACTIVE BAR + HOST CONTROLS -->
+      <footer class="bottom-dock">
+
+        <!-- HOST-ONLY CONTROLS (hidden under ?clean=1 via 4 layers) -->
+        <div id="hostControls" class="host-controls" aria-label="Điều khiển dành cho Host">
+          <button id="repeatSpeechBtn" type="button" class="host-btn">🔁 Đọc lại (S)</button>
+          <button id="toggleTtsBtn" type="button" class="host-btn active">🔊 TTS: BẬT</button>
+          <button id="toggleBgmBtn" type="button" class="host-btn active">🎵 Nhạc: BẬT</button>
+          <button id="pauseBtn" type="button" class="host-btn">⏸ Tạm dừng (Space)</button>
+          <button id="nextProductBtn" type="button" class="host-btn">⏭ Món tiếp</button>
+        </div>
+      </footer>
+
+      <!-- START OVERLAY (SINGLE BUTTON: ▶ Bắt đầu) -->
+      <div id="startOverlay" class="start-overlay">
+        <div class="start-card">
+          <div class="start-host-avatar-wrap">
+            <img src="assets/host-2d-avatar.svg" alt="Host Ngọc 2D" class="start-host-avatar" />
+          </div>
+          <span class="start-live-tag">● PHÁT TRỰC TIẾP · HOST NGỌC</span>
+          <h2 class="start-title">Host bán hàng</h2>
+          <p class="start-host-intro">Xin chào cả nhà, em là <strong>Ngọc</strong> ạ!</p>
+          <p class="start-subtitle">Săn deal 5 nhóm hàng · Chốt theo mã 01–13 · Ưu đãi Freeship 10💎 &amp; −5% món đang giới thiệu mốc 50💎</p>
+          <button id="startBtn" class="start-btn" type="button">▶ Bắt đầu</button>
+        </div>
+      </div>
+
+      <!-- STOCK ALERT TOAST (shown immediately when adding over stock -> "Hết hàng") -->
+      <div id="stockAlertToast" class="stock-alert-toast hidden" role="alert" aria-live="assertive"></div>
+
+      <!-- CART DRAWER MODAL -->
+      <div id="cartModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="cartModalTitle">
+        <div class="modal-panel cart-panel">
+          <div class="modal-header">
+            <h2 id="cartModalTitle">🛒 Giỏ hàng — Host bán hàng</h2>
+            <button id="closeCartBtn" class="modal-close" type="button" aria-label="Đóng giỏ hàng">✕</button>
+          </div>
+          <div id="cartModalStockAlert" class="cart-stock-alert hidden" role="alert"></div>
+          <div id="cartItemsList" class="cart-items-list"></div>
+          <div id="cartCatalogSavingsBanner" class="cart-savings-banner hidden">
+            ✨ Đã giảm 0đ so với giá gốc
+          </div>
+          <div id="cartGiftRuleNote" class="cart-rule-note hidden"></div>
+          <div id="cartSummary" class="cart-summary">
+            <div class="summary-row">
+              <span>Tiền hàng (giá ưu đãi)</span>
+              <strong id="cartSubtotal">0đ</strong>
+            </div>
+            <div class="summary-row">
+              <span>Phí vận chuyển</span>
+              <strong id="cartShipping">0đ</strong>
+            </div>
+            <div id="cartGiftDiscountRow" class="summary-row discount-row hidden">
+              <span>Giảm thêm mốc quà 50💎 (−5% món đang giới thiệu)</span>
+              <strong id="cartDiscount">-0đ</strong>
+            </div>
+            <div class="summary-row total-row">
+              <span>Tổng thanh toán</span>
+              <strong id="cartTotal">0đ</strong>
+            </div>
+            <div id="cartFormulaHint" class="cart-formula-hint">Tổng = Tiền hàng + Phí vận chuyển</div>
+            <button id="proceedCheckoutBtn" class="btn-primary btn-full" type="button">⚡ Mua ngay</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CHECKOUT FORM MODAL -->
+      <div id="checkoutModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="checkoutModalTitle">
+        <div class="modal-panel checkout-panel">
+          <div class="modal-header">
+            <h2 id="checkoutModalTitle">📦 Thông tin chốt đơn — Host bán hàng</h2>
+            <button id="closeCheckoutBtn" class="modal-close" type="button" aria-label="Đóng chốt đơn">✕</button>
+          </div>
+          <div id="checkoutOrderPreview" class="checkout-preview"></div>
+          <form id="checkoutForm" class="checkout-form">
+            <label>
+              <span>Họ và tên người nhận *</span>
+              <input id="customerName" name="name" type="text" required placeholder="Ví dụ: Nguyễn Minh Anh" />
+            </label>
+            <label>
+              <span>Số điện thoại *</span>
+              <input id="customerPhone" name="phone" type="tel" required placeholder="Ví dụ: 0901234567" />
+            </label>
+            <label>
+              <span>Địa chỉ nhận hàng *</span>
+              <input id="customerAddress" name="address" type="text" required placeholder="Ví dụ: 123 Lê Lợi, Quận 1, TP.HCM" />
+            </label>
+            <p id="checkoutError" class="form-error hidden"></p>
+            <button id="submitOrderBtn" class="btn-primary btn-full" type="submit">✅ Đặt hàng</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- ORDER SUCCESS CELEBRATION MODAL ("Đã chốt đơn!") -->
+      <div id="orderSuccessModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="orderSuccessTitle">
+        <div class="modal-panel success-panel">
+          <div class="success-host-wrap">
+            <img src="assets/host-2d-avatar.svg" alt="Host Ngọc 2D" class="success-host-avatar" />
+            <span class="success-icon-badge">🎉</span>
+          </div>
+          <h2 id="orderSuccessTitle" class="success-title">Đã chốt đơn!</h2>
+          <p class="success-brand"><strong>Ngọc</strong> cảm ơn bạn đã ủng hộ phiên live <strong>Host bán hàng</strong>!</p>
+          <div id="orderSuccessDetails" class="success-details"></div>
+          <button id="closeSuccessBtn" class="btn-primary btn-full" type="button">Tiếp tục xem live</button>
+        </div>
+      </div>
+
+      <!-- CONFETTI OVERLAY CANVAS -->
+      <canvas id="confettiCanvas" class="confetti-canvas" width="1080" height="1920"></canvas>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@ably/pubsub-device@3.2.0/dist/cdn/ably.min.js"></script>
+    <script src="ably-config.js?v=1"></script>
+    <script type="module" src="js/app.js?v=1"></script>
+</body>
+</html>
